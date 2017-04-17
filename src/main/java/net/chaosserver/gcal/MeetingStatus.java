@@ -3,6 +3,7 @@ package net.chaosserver.gcal;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 import java.util.Collections;
+import java.util.List;
 import java.util.Scanner;
 
 import com.beust.jcommander.JCommander;
@@ -44,7 +45,7 @@ public class MeetingStatus {
     protected String username = System.getenv("googleCalendarUsername");
 
     @Parameter(names = { "-c", "--client-id" }, description = "The client id.")
-    protected String clientId = "950443281089-hmckuorbl35qc6kr3nt7rfj5rmt80c6e.apps.googleusercontent.com"; // "foo@gmail.com"
+    protected String clientId = "946451152336-r2jegpli0qi0fq681ar73f1fj3t4it4c.apps.googleusercontent.com"; // "foo@gmail.com"
 
     @Parameter(names = { "-s", "--client-secret" }, description = "The client secret.")
     protected String clientSecret = System.getenv("googleCalendarSecret");
@@ -55,11 +56,23 @@ public class MeetingStatus {
         MeetingStatus meetingStatus = new MeetingStatus();
         new JCommander(meetingStatus, args);
         meetingStatus.getEntries();
-
     }
 
     public void getEntries() throws GeneralSecurityException, IOException {
-        java.io.File DATA_STORE_DIR = new java.io.File(
+    	
+    	if(username == null || username.isEmpty()) {
+    		throw new IllegalStateException("Missing username which "
+    				+ "must set in the environment [googleCalendarUsername] "
+    				+ "or passed into argument [-u]");
+    	}
+    	
+    	if(clientSecret == null || clientSecret.isEmpty()) {
+    		throw new IllegalStateException("Missing clientSecret which "
+    				+ "must set in the environment [googleCalendarSecret] "
+    				+ "or passed into argument [-s]");
+    	}
+
+    	java.io.File DATA_STORE_DIR = new java.io.File(
                 System.getProperty("user.home"), ".store/calendar_data");
 
         HttpTransport httpTransport = GoogleNetHttpTransport
@@ -112,15 +125,24 @@ public class MeetingStatus {
                 if (!complete) {
                     String transparency = entry.getTransparency();
                     if (!"transparent".equals(transparency)) {
-                        for (EventAttendee attendee : entry.getAttendees()) {
-                            if (username.equals(attendee.getEmail())
+                    	List<EventAttendee> attendees = entry.getAttendees();
+                    	
+                    	// If there are no attendees - then it must be a person
+                    	// event.
+                    	if(attendees == null) {
+                            System.out.println(entry.getSummary());
+                            complete = true;                    		
+                    	} else {
+                    		for (EventAttendee attendee : attendees) {
+                    			if (username.equals(attendee.getEmail())
                                     && "accepted".equals(attendee
                                             .getResponseStatus())) {
 
-                                System.out.println(entry.getSummary());
-                                complete = true;
-                            }
-                        }
+                    				System.out.println(entry.getSummary());
+                    				complete = true;
+                    			}
+                    		}
+                    	}
                     }
                 }
             }
