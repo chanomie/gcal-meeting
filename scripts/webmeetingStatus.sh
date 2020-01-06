@@ -69,17 +69,26 @@ local_meeting_check() {
 }
 
 meeting_response="none"
-# Check if running locally or remotely.  If running remote ssh otherwise just run
-if [ -z "${remote:-}" ]; then
-  meeting_response=$(local_meeting_check)
-else
-  server=$(echo ${remote} | cut -d ":" -f 1)
-  command=$(echo ${remote} | cut -d ":" -f 2)
-  meeting_response=$(ssh -o ConnectTimeout=1 ${server} ${command} 2>&1)
-  if [ $? -ne 0 ]; then
-    meeting_response="none"
+
+# Check if it is working hours
+day_of_week=$(date +%u)
+hour_of_day=$(date +%H)
+
+if [ "${day_of_week}" -gt "0" ] && [ "${day_of_week}" -lt "6" ] && [ "${hour_of_day}" -gt "8" ] && [ "${hour_of_day}" -lt "17" ]; then
+  # Check if running locally or remotely.  If running remote ssh otherwise just run
+  if [ -z "${remote:-}" ]; then
+    meeting_response=$(local_meeting_check)
+  else
+    server=$(echo ${remote} | cut -d ":" -f 1)
+    command=$(echo ${remote} | cut -d ":" -f 2)
+    meeting_response=$(ssh -o ConnectTimeout=1 ${server} ${command} 2>&1)
+    if [ $? -ne 0 ]; then
+      meeting_response="none"
+    fi
   fi
 fi
+
+
 
 ## If there is an error response, assumed there is no meeting (off)
 if [ "${meeting_response}" = "none" ]; then
