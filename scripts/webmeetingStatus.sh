@@ -51,7 +51,7 @@ local_meeting_check() {
   declare -a arr=("Google")
   for processName in "${arr[@]}"
   do
-    newMeetingCount=$(lsof -n | grep -i "VDC" | grep -i "${processName}" | wc -l)
+    newMeetingCount=$(lsof -n 2>/dev/null | grep -i "VDC" | grep -i "${processName}" | wc -l)
     if [ "${newMeetingCount}" -gt "1" ]; then
       meetingCount=$((meetingCount + 1))
       webMeetingName="${processName}"
