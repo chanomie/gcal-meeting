@@ -59,7 +59,7 @@ local_meeting_check() {
   done
 
   if [ "${meetingCount}" -gt "0" ]; then
-    osascript -e "display notification \"Currently in a ${webMeetingName} web meeting.\" with title \"In Web Meeting\""
+    # osascript -e "display notification \"Currently in a ${webMeetingName} web meeting.\" with title \"In Web Meeting\""
     response="${webMeetingName}"
   else
     response="none"
@@ -92,7 +92,7 @@ fi
 
 ## If there is an error response, assumed there is no meeting (off)
 if [ "${meeting_response}" = "none" ]; then
-  >&2 echo "${meeting_response}"
+  echo "${meeting_response}"
   exit 1
 else
   echo "${meeting_response}"
