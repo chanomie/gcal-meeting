@@ -75,7 +75,10 @@ if [ -z "${remote:-}" ]; then
 else
   server=$(echo ${remote} | cut -d ":" -f 1)
   command=$(echo ${remote} | cut -d ":" -f 2)
-  meeting_response=$(ssh ${server} ${command} 2>&1)
+  meeting_response=$(ssh -o ConnectTimeout=1 ${server} ${command} 2>&1)
+  if [ $? -ne 0 ]; then
+    meeting_response="none"
+  fi
 fi
 
 ## If there is an error response, assumed there is no meeting (off)
